@@ -1,94 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 
-	<head>
+<head>
+    <meta charset="UTF-8">
 
-		<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<title>Device loop animation</title>
+    <title>Device loop animation</title>
 
-		<meta name="description" content="">
-		<meta name="author" content="Hakim El Hattab">
+    <meta name="description" content="A CSS animation showing a slide presentation on a desktop, tablet, and phone.">
+    <meta name="author" content="Hakim El Hattab">
 
-		<link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+    <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
 
-	</head>
+    <style>
+        .credits {
+            position: absolute;
+            right: 20px;
+            bottom: 25px;
+            font-size: 15px;
+        }
 
-	<body>
+        .credits>* {
+            vertical-align: middle;
+            margin-left: 15px;
+        }
 
-		<p>A device loop animation<br>as seen on <a href="https://slides.com" target="_blank">slides.com</a></p>
+        .credits a {
+            padding: 8px 10px;
+            color: #333;
+            border: 2px solid #aaa;
+            border-radius: 4px; /* Slightly more modern radius */
+            text-decoration: none;
+            transition: all 0.2s ease; /* Added a subtle transition */
+        }
 
-		<div class="animation" data-animation-step="1">
-			<div class="device">
-				<div class="phone-home-button"></div>
-				<div class="tablet-home-button"></div>
-				<div class="screen-stand"><div class="leg"></div><div class="foot"></div></div>
-				<div class="display">
-					<div class="slide1"><div>Works on <em>desktops</em></div></div>
-					<div class="slide2"><div>Works on <em>tablets</em></div></div>
-					<div class="slide3"><div>Works on <em>phones</em></div></div>
-				</div>
-			</div>
-		</div>
+        .credits a:hover {
+            border-color: #666;
+            color: #000;
+            background-color: #f0f0f0; /* Added a hover effect */
+        }
+    </style>
+</head>
 
-		<script>
+<body>
 
-			// this thing is js driven on slid.es so I didn't bother switching out for css animations
-			var duration = 7000, steps = 3, step = 1;
+    <main>
+        <p>A device loop animation<br>as seen on <a href="https://slides.com" target="_blank" rel="noopener">slides.com</a></p>
 
-			setInterval( function() {
-				document.querySelector( '.animation' ).setAttribute( 'data-animation-step', step = ++step > steps ? 1 : step );
-			}, duration / steps );
+        <div class="animation" data-animation-step="1" role="img" aria-label="An animation showing a presentation on a desktop, tablet, and phone screen.">
+            <div class="device">
+                <div class="phone-home-button"></div>
+                <div class="tablet-home-button"></div>
+                <div class="screen-stand">
+                    <div class="leg"></div>
+                    <div class="foot"></div>
+                </div>
+                <div class="display">
+                    <div class="slide1">
+                        <div>Works on <em>desktops</em></div>
+                    </div>
+                    <div class="slide2">
+                        <div>Works on <em>tablets</em></div>
+                    </div>
+                    <div class="slide3">
+                        <div>Works on <em>phones</em></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="credits">
+        <a href="https://github.com/hakimel/css/tree/master/device-loop" target="_blank" rel="noopener">Source on GitHub</a>
+        <a href="https://twitter.com/hakimel" target="_blank" rel="noopener">Follow @hakimel</a>
+        <a href="https://twitter.com/share?text=A%20device%20loop%20animation%20by%20@hakimel&url=http://lab.hakim.se/device-loop&related=hakimel" target="_blank" rel="noopener">Tweet this</a>
+    </footer>
 
-		</script>
+    <script>
+        // Wrapped script in a DOMContentLoaded listener to ensure the page is loaded first
+        document.addEventListener('DOMContentLoaded', () => {
+            const animationElement = document.querySelector('.animation');
+            const duration = 7000;
+            const totalSteps = 3;
+            let currentStep = 1;
 
-		<!-- Third party scripts and sharing UI -->
+            setInterval(() => {
+                // Made the step logic clearer: increments and loops back to 1
+                currentStep = (currentStep % totalSteps) + 1;
+                animationElement.setAttribute('data-animation-step', currentStep);
+            }, duration / totalSteps);
+        });
+    </script>
 
-		<div class="credits">
-			<a href="https://github.com/hakimel/css/tree/master/device-loop">Source on GitHub</a>
-			<a href="https://twitter.com/hakimel">Follow @hakimel</a>
-			<a href="https://twitter.com/share?text=A%20device%20loop%20animation%20by%20@hakimel&url=http://lab.hakim.se/device-loop&related=hakimel" target="_blank">Tweet this</a>
-		</div>
+    <script>
+        var _gaq = [['_setAccount', 'UA-15240703-1'], ['_trackPageview']];
+        (function(d, t) {
+        var g = d.createElement(t),
+            s = d.getElementsByTagName(t)[0];
+        g.async = true;
+        g.src = ('https:' == location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s);
+        })(document, 'script');
+    </script>
 
-		<style type="text/css" media="screen">
-			.credits {
-				position: absolute;
-				right: 20px;
-				bottom: 25px;
-				font-size: 15px;
-				color: #fff;
-			}
-
-			.credits>* {
-				vertical-align: middle;
-				margin-left: 15px;
-			}
-
-			.credits a {
-				padding: 8px 10px;
-				color: #333;
-				border: 2px solid #aaa;
-				border-radius: 2px;
-				text-decoration: none;
-			}
-
-			.credits a:hover {
-				border-color: #666;
-				color: #000;
-			}
-		</style>
-
-		<script>
-			var _gaq = [['_setAccount', 'UA-15240703-1'], ['_trackPageview']];
-			(function(d, t) {
-			var g = d.createElement(t),
-			    s = d.getElementsByTagName(t)[0];
-			g.async = true;
-			g.src = ('https:' == location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			s.parentNode.insertBefore(g, s);
-			})(document, 'script');
-		</script>
-
-	</body>
-
+</body>
 </html>
