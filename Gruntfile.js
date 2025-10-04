@@ -1,53 +1,86 @@
-const sass = require('node-sass');
-
 /* global module:false */
 module.exports = function(grunt) {
-	var port = grunt.option('port') || 8000;
+	// Just-in-time plugin loader:
+	// Automatically loads any grunt plugin tasks as they are needed.
+	// This is faster and cleaner than writing `grunt.loadNpmTasks()` for every plugin.
+	require('jit-grunt')(grunt);
+
 	// Project configuration
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
-		meta: {
-			banner:
-				'/*!\n' +
-				' * http://lab.hakim.se\n' +
-				' *\n' +
-				' * Copyright (C) 2015 Hakim El Hattab, http://hakim.se\n' +
-				' */'
-		},
 
-		cssmin: {
-			compress: {
-				files: {}
-			}
-		},
-
-		sass: {
-			options: {
-				implementation: sass
-			},
-			main: {
-				files: {
-					'device-loop/style.css': 'device-loop/style.scss',
-					'flexing-pagination/style.css': 'flexing-pagination/style.scss',
-					'cloudy-spiral/style.css': 'cloudy-spiral/style.scss',
-					'checkwave/style.css': 'checkwave/style.scss',
-					'monocle/style.css': 'monocle/style.scss',
-					'flipside/style.css': 'flipside/style.scss',
-					'progress-nav/style.css': 'progress-nav/style.scss'
+		// Development Server
+		connect: {
+			server: {
+				options: {
+					port: grunt.option('port') || 8000,
+					base: '.',
+					// Injects a script into your pages for live reloading
+					livereload: true
 				}
 			}
 		},
 
-		autoprefixer: {
-			dist: {
-				files: [
-					{ src: 'flexing-pagination/style.css' },
-					{ src: 'flipside/style.css' },
-					{ src: 'progress-nav/style.css' }
-				]
+		//  Watch for Changes & LiveReload 
+		watch: {
+			options: {
+				// Enables the livereload functionality in the browser
+				livereload: true,
+				// Prevents the Grunt process from crashing on an error
+				spawn: false
+			},
+			// Target for Sass files
+			sass: {
+				files: ['**/*.scss'],
+				tasks: ['sass', 'autoprefixer']
+			},
+			// Target for JavaScript files
+			js: {
+				files: ['**/*.js', '!node_modules/**'],
+				tasks: ['jshint']
+			},
+			// Target for reloading when Gruntfile itself changes
+			gruntfile: {
+				files: ['Gruntfile.js']
 			}
 		},
 
+		// --- Sass Compilation ---
+		sass: {
+			options: {
+				// Use the modern Dart Sass implementation
+				implementation: require('node-sass'),
+				sourceMap: true
+			},
+			dist: {
+				// DYNAMIC MAPPING:
+				// This automatically finds all .scss files in any subdirectory
+				// and compiles them to a .css file in the same directory.
+				files: [{
+					expand: true,    // Enable dynamic expansion
+					src: ['**/*.scss', '!node_modules/**'], // Source files pattern
+					ext: '.css'      // The output file extension
+				}]
+			}
+		},
+
+		// --- CSS Vendor Prefixes ---
+		autoprefixer: {
+			options: {
+				// Configure which browsers to support
+				browsers: ['last 2 versions', 'ie 11']
+			},
+			dist: {
+				// DYNAMIC MAPPING:
+				// Automatically finds all generated CSS files to add prefixes to them.
+				files: [{
+					expand: true,
+					src: ['**/*.css', '!node_modules/**']
+				}]
+			}
+		},
+
+		// --- JavaScript Linting ---
 		jshint: {
 			options: {
 				curly: false,
@@ -67,39 +100,57 @@ module.exports = function(grunt) {
 					console: false
 				}
 			},
-			files: [ 'Gruntfile.js', '**/*.js' ]
+			// Check our Gruntfile and all JS files, excluding vendor libraries
+			all: ['Gruntfile.js', '**/*.js', '!node_modules/**']
+		},
+		
+		// --- Production Build Tasks ---
+
+		// Clean task to remove generated files
+		clean: {
+			css: ['**/*.css', '**/*.css.map', '!node_modules/**']
 		},
 
-		connect: {
-			server: {
-				options: {
-					port: port,
-					base: '.'
-				}
+		// Minify CSS
+		cssmin: {
+			build: {
+				files: [{
+					expand: true,
+					src: ['**/*.css', '!**/*.min.css', '!node_modules/**'], // Source all CSS but not already minified ones
+					dest: '.',
+					ext: '.min.css' // Output as .min.css
+				}]
 			}
 		},
 
-		watch: {
-			main: {
-				files: [ 'Gruntfile.js', '*/*.js', '*/*.scss' ],
-				tasks: 'default'
-			},
+		// Minify JavaScript (This was in your dependencies but not used)
+		uglify: {
+			build: {
+				options: {
+					banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+				},
+				files: [{
+					expand: true,
+					src: ['**/*.js', '!**/*.min.js', '!Gruntfile.js', '!node_modules/**'],
+					dest: '.',
+					ext: '.min.js'
+				}]
+			}
 		}
 
 	});
 
-	// Dependencies
-	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
-	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
-	grunt.loadNpmTasks( 'grunt-contrib-watch' );
-	grunt.loadNpmTasks( 'grunt-contrib-connect' );
-	grunt.loadNpmTasks( 'grunt-autoprefixer' );
-	grunt.loadNpmTasks( 'grunt-sass' );
+	// --- Task Registration ---
 
-	// Default task
-	grunt.registerTask( 'default', [ 'sass', 'autoprefixer' ] );
+	// Default task: Compile Sass and add vendor prefixes.
+	// Run with: `grunt`
+	grunt.registerTask('default', ['sass', 'autoprefixer']);
 
-	// Serve presentation locally
-	grunt.registerTask( 'serve', [ 'connect', 'watch' ] );
-
+	// Development task: Start a server and watch for changes.
+	// Run with: `grunt serve`
+	grunt.registerTask('serve', ['default', 'connect', 'watch']);
+	
+	// Production Build task: Clean, lint, compile, and minify all assets.
+	// Run with: `grunt build`
+	grunt.registerTask('build', ['clean', 'jshint', 'default', 'cssmin', 'uglify']);
 };
